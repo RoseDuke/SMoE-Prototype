@@ -1,0 +1,8 @@
+build/
+results/*.csv
+results/*.txt
+*.o
+*.a
+*.so
+.vscode/
+.idea/
