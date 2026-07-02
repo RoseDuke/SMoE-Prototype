@@ -1,0 +1,73 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1180" height="680" viewBox="0 0 1180 680">
+<style>
+text{font-family:Arial,Helvetica,sans-serif;fill:#1f252e}
+.title{font-size:22px;font-weight:700}
+.subtitle{font-size:13px;fill:#6f7a89}
+.axis{stroke:#31363f;stroke-width:1.2}
+.grid{stroke:#d8dee8;stroke-width:1}
+.tick{font-size:11px;fill:#6f7a89}
+.label{font-size:12px;fill:#1f252e}
+.small{font-size:11px;fill:#6f7a89}
+.value{font-size:12px;font-weight:700;fill:#1f252e}
+</style>
+<rect x="0" y="0" width="1180" height="680" fill="#ffffff"/>
+<text x="36.00" y="44.00" class="title" text-anchor="start">Basic MoE baseline vs SmartNIC optimizations</text>
+<text x="36.00" y="68.00" class="subtitle" text-anchor="start">Comparison against the original synchronous MoE execution model.</text>
+<text x="88.00" y="96.00" class="label" text-anchor="start">Average latency normalized to basic MoE baseline</text>
+<line x1="88.00" y1="112.00" x2="88.00" y2="470.00" class="axis"/>
+<line x1="88.00" y1="470.00" x2="705.00" y2="470.00" class="axis"/>
+<line x1="88.00" y1="470.00" x2="705.00" y2="470.00" class="grid"/>
+<text x="80.00" y="474.00" class="tick" text-anchor="end">0.0x</text>
+<line x1="88.00" y1="398.40" x2="705.00" y2="398.40" class="grid"/>
+<text x="80.00" y="402.40" class="tick" text-anchor="end">0.2x</text>
+<line x1="88.00" y1="326.80" x2="705.00" y2="326.80" class="grid"/>
+<text x="80.00" y="330.80" class="tick" text-anchor="end">0.4x</text>
+<line x1="88.00" y1="255.20" x2="705.00" y2="255.20" class="grid"/>
+<text x="80.00" y="259.20" class="tick" text-anchor="end">0.6x</text>
+<line x1="88.00" y1="183.60" x2="705.00" y2="183.60" class="grid"/>
+<text x="80.00" y="187.60" class="tick" text-anchor="end">0.8x</text>
+<line x1="88.00" y1="112.00" x2="705.00" y2="112.00" class="grid"/>
+<text x="80.00" y="116.00" class="tick" text-anchor="end">1.1x</text>
+<rect x="122.00" y="129.05" width="160.33" height="340.95" fill="#5b6472" stroke="none"/>
+<text x="202.17" y="105.05" class="value" text-anchor="middle">1.000x</text>
+<text x="202.17" y="121.05" class="small" text-anchor="middle">baseline</text>
+<text x="202.17" y="496.00" class="label" text-anchor="middle">Basic MoE</text>
+<text x="202.17" y="513.00" class="label" text-anchor="middle">synchronous</text>
+<text x="202.17" y="532.00" class="small" text-anchor="middle">6,903,347 cycles</text>
+<rect x="316.33" y="174.28" width="160.33" height="295.72" fill="#37a36b" stroke="none"/>
+<text x="396.50" y="150.28" class="value" text-anchor="middle">0.867x</text>
+<text x="396.50" y="166.28" class="small" text-anchor="middle">13.3% lower</text>
+<text x="396.50" y="496.00" class="label" text-anchor="middle">SmartNIC-side</text>
+<text x="396.50" y="513.00" class="label" text-anchor="middle">batching</text>
+<text x="396.50" y="532.00" class="small" text-anchor="middle">5,987,613 cycles</text>
+<rect x="510.67" y="187.25" width="160.33" height="282.75" fill="#b84a62" stroke="none"/>
+<text x="590.83" y="163.25" class="value" text-anchor="middle">0.829x</text>
+<text x="590.83" y="179.25" class="small" text-anchor="middle">17.1% lower</text>
+<text x="590.83" y="496.00" class="label" text-anchor="middle">Full</text>
+<text x="590.83" y="513.00" class="label" text-anchor="middle">SmartNIC</text>
+<text x="590.83" y="532.00" class="small" text-anchor="middle">5,724,828 cycles</text>
+<rect x="760.00" y="112.00" width="365.00" height="358.00" fill="#f7f9fc" stroke="#d8dee8"/>
+<text x="782.00" y="146.00" class="label" text-anchor="start">Improvement vs basic MoE baseline</text>
+<text x="782.00" y="184.00" class="small" text-anchor="start">Batched avg latency</text>
+<text x="950.00" y="184.00" class="small" text-anchor="start">6,903,347 -&gt; 5,987,613</text>
+<text x="1103.00" y="184.00" class="value" text-anchor="end">13.3%</text>
+<text x="782.00" y="224.00" class="small" text-anchor="start">Full avg latency</text>
+<text x="950.00" y="224.00" class="small" text-anchor="start">6,903,347 -&gt; 5,724,828</text>
+<text x="1103.00" y="224.00" class="value" text-anchor="end">17.1%</text>
+<text x="782.00" y="264.00" class="small" text-anchor="start">Full P50 latency</text>
+<text x="950.00" y="264.00" class="small" text-anchor="start">7,106,728 -&gt; 5,406,256</text>
+<text x="1103.00" y="264.00" class="value" text-anchor="end">23.9%</text>
+<text x="782.00" y="304.00" class="small" text-anchor="start">Full P95 latency</text>
+<text x="950.00" y="304.00" class="small" text-anchor="start">12,488,192 -&gt; 11,891,155</text>
+<text x="1103.00" y="304.00" class="value" text-anchor="end">4.8%</text>
+<text x="782.00" y="344.00" class="small" text-anchor="start">Full packet count</text>
+<text x="950.00" y="344.00" class="small" text-anchor="start">5,848 -&gt; 1,468</text>
+<text x="1103.00" y="344.00" class="value" text-anchor="end">74.9%</text>
+<text x="782.00" y="384.00" class="small" text-anchor="start">Full final cycle</text>
+<text x="950.00" y="384.00" class="small" text-anchor="start">13,093,024 -&gt; 12,870,420</text>
+<text x="1103.00" y="384.00" class="value" text-anchor="end">1.7%</text>
+<text x="88.00" y="540.00" class="label" text-anchor="start">Interpretation:</text>
+<text x="88.00" y="563.00" class="subtitle" text-anchor="start">SmartNIC-side batching reduces packet overhead while preserving batched GPU execution.</text>
+<text x="88.00" y="585.00" class="subtitle" text-anchor="start">Full SmartNIC adds admission control and reorder logic on top of batching.</text>
+<text x="88.00" y="607.00" class="subtitle" text-anchor="start">The main measured gain is average/P50 latency; final-cycle improvement remains modest on this trace.</text>
+</svg>

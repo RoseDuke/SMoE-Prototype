@@ -1,0 +1,59 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1050" height="590" viewBox="0 0 1050 590">
+<style>
+text{font-family:Arial,Helvetica,sans-serif;fill:#1f252e}
+.title{font-size:22px;font-weight:700}
+.subtitle{font-size:13px;fill:#6f7a89}
+.axis{stroke:#31363f;stroke-width:1.2}
+.grid{stroke:#d8dee8;stroke-width:1}
+.tick{font-size:11px;fill:#6f7a89}
+.label{font-size:12px;fill:#1f252e}
+.small{font-size:11px;fill:#6f7a89}
+.value{font-size:12px;font-weight:700;fill:#1f252e}
+</style>
+<rect x="0" y="0" width="1050" height="590" fill="#ffffff"/>
+<text x="36.00" y="42.00" class="title" text-anchor="start">Tail latency by optimization stage</text>
+<text x="36.00" y="64.00" class="subtitle" text-anchor="start">P50 improves strongly; P95/P99 improve more modestly on this trace.</text>
+<line x1="88.00" y1="96.00" x2="88.00" y2="440.00" class="axis"/>
+<line x1="88.00" y1="440.00" x2="990.00" y2="440.00" class="axis"/>
+<line x1="88.00" y1="440.00" x2="990.00" y2="440.00" class="grid"/>
+<text x="80.00" y="444.00" class="tick" text-anchor="end">0.0M</text>
+<line x1="88.00" y1="382.67" x2="990.00" y2="382.67" class="grid"/>
+<text x="80.00" y="386.67" class="tick" text-anchor="end">2.2M</text>
+<line x1="88.00" y1="325.33" x2="990.00" y2="325.33" class="grid"/>
+<text x="80.00" y="329.33" class="tick" text-anchor="end">4.3M</text>
+<line x1="88.00" y1="268.00" x2="990.00" y2="268.00" class="grid"/>
+<text x="80.00" y="272.00" class="tick" text-anchor="end">6.5M</text>
+<line x1="88.00" y1="210.67" x2="990.00" y2="210.67" class="grid"/>
+<text x="80.00" y="214.67" class="tick" text-anchor="end">8.7M</text>
+<line x1="88.00" y1="153.33" x2="990.00" y2="153.33" class="grid"/>
+<text x="80.00" y="157.33" class="tick" text-anchor="end">10.8M</text>
+<line x1="88.00" y1="96.00" x2="990.00" y2="96.00" class="grid"/>
+<text x="80.00" y="100.00" class="tick" text-anchor="end">13.0M</text>
+<rect x="113.00" y="251.95" width="46.80" height="188.05" fill="#4f7cac" stroke="none"/>
+<rect x="164.80" y="109.54" width="46.80" height="330.46" fill="#53a548" stroke="none"/>
+<rect x="216.60" y="98.61" width="46.80" height="341.39" fill="#c45b35" stroke="none"/>
+<text x="188.20" y="464.00" class="label" text-anchor="middle">Sync baseline</text>
+<rect x="288.40" y="258.72" width="46.80" height="181.28" fill="#4f7cac" stroke="none"/>
+<rect x="340.20" y="113.04" width="46.80" height="326.96" fill="#53a548" stroke="none"/>
+<rect x="392.00" y="103.02" width="46.80" height="336.98" fill="#c45b35" stroke="none"/>
+<text x="363.60" y="464.00" class="label" text-anchor="middle">Async send</text>
+<rect x="463.80" y="287.93" width="46.80" height="152.07" fill="#4f7cac" stroke="none"/>
+<rect x="515.60" y="120.85" width="46.80" height="319.15" fill="#53a548" stroke="none"/>
+<rect x="567.40" y="107.05" width="46.80" height="332.95" fill="#c45b35" stroke="none"/>
+<text x="539.00" y="464.00" class="label" text-anchor="middle">Async + agg</text>
+<rect x="639.20" y="295.82" width="46.80" height="144.18" fill="#4f7cac" stroke="none"/>
+<rect x="691.00" y="123.19" width="46.80" height="316.81" fill="#53a548" stroke="none"/>
+<rect x="742.80" y="106.00" width="46.80" height="334.00" fill="#c45b35" stroke="none"/>
+<text x="714.40" y="464.00" class="label" text-anchor="middle">Async + counter</text>
+<rect x="814.60" y="296.94" width="46.80" height="143.06" fill="#4f7cac" stroke="none"/>
+<rect x="866.40" y="125.34" width="46.80" height="314.66" fill="#53a548" stroke="none"/>
+<rect x="918.20" y="108.11" width="46.80" height="331.89" fill="#c45b35" stroke="none"/>
+<text x="889.80" y="464.00" class="label" text-anchor="middle">Full SmartNIC</text>
+<rect x="88.00" y="518.00" width="15.00" height="15.00" fill="#4f7cac" stroke="none"/>
+<text x="110.00" y="530.00" class="label" text-anchor="start">P50</text>
+<rect x="180.00" y="518.00" width="15.00" height="15.00" fill="#53a548" stroke="none"/>
+<text x="202.00" y="530.00" class="label" text-anchor="start">P95</text>
+<rect x="272.00" y="518.00" width="15.00" height="15.00" fill="#c45b35" stroke="none"/>
+<text x="294.00" y="530.00" class="label" text-anchor="start">P99</text>
+<text x="398.00" y="530.00" class="subtitle" text-anchor="start">Full vs baseline: P50 23.9% lower, P95 4.8% lower, P99 2.8% lower.</text>
+</svg>

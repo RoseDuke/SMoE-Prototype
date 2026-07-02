@@ -1,0 +1,56 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="980" height="560" viewBox="0 0 980 560">
+<style>
+text{font-family:Arial,Helvetica,sans-serif;fill:#1f252e}
+.title{font-size:22px;font-weight:700}
+.subtitle{font-size:13px;fill:#6f7a89}
+.axis{stroke:#31363f;stroke-width:1.2}
+.grid{stroke:#d8dee8;stroke-width:1}
+.tick{font-size:11px;fill:#6f7a89}
+.label{font-size:12px;fill:#1f252e}
+.small{font-size:11px;fill:#6f7a89}
+.value{font-size:12px;font-weight:700;fill:#1f252e}
+</style>
+<rect x="0" y="0" width="980" height="560" fill="#ffffff"/>
+<text x="36.00" y="42.00" class="title" text-anchor="start">Average latency improvement</text>
+<text x="36.00" y="64.00" class="subtitle" text-anchor="start">Lower normalized latency means less time from token arrival to completion.</text>
+<line x1="92.00" y1="92.00" x2="92.00" y2="430.00" class="axis"/>
+<line x1="92.00" y1="430.00" x2="930.00" y2="430.00" class="axis"/>
+<line x1="92.00" y1="430.00" x2="930.00" y2="430.00" class="grid"/>
+<text x="84.00" y="434.00" class="tick" text-anchor="end">0.0x</text>
+<line x1="92.00" y1="362.40" x2="930.00" y2="362.40" class="grid"/>
+<text x="84.00" y="366.40" class="tick" text-anchor="end">0.2x</text>
+<line x1="92.00" y1="294.80" x2="930.00" y2="294.80" class="grid"/>
+<text x="84.00" y="298.80" class="tick" text-anchor="end">0.4x</text>
+<line x1="92.00" y1="227.20" x2="930.00" y2="227.20" class="grid"/>
+<text x="84.00" y="231.20" class="tick" text-anchor="end">0.7x</text>
+<line x1="92.00" y1="159.60" x2="930.00" y2="159.60" class="grid"/>
+<text x="84.00" y="163.60" class="tick" text-anchor="end">0.9x</text>
+<line x1="92.00" y1="92.00" x2="930.00" y2="92.00" class="grid"/>
+<text x="84.00" y="96.00" class="tick" text-anchor="end">1.1x</text>
+<rect x="126.00" y="122.73" width="126.80" height="307.27" fill="#5b6472" stroke="none"/>
+<text x="189.40" y="100.73" class="value" text-anchor="middle">1.000x</text>
+<text x="189.40" y="116.73" class="small" text-anchor="middle">baseline</text>
+<text x="189.40" y="454.00" class="label" text-anchor="middle">Sync baseline</text>
+<text x="189.40" y="472.00" class="small" text-anchor="middle">6,903,347</text>
+<rect x="286.80" y="133.16" width="126.80" height="296.84" fill="#2f7ebc" stroke="none"/>
+<text x="350.20" y="111.16" class="value" text-anchor="middle">0.966x</text>
+<text x="350.20" y="127.16" class="small" text-anchor="middle">3.4% lower</text>
+<text x="350.20" y="454.00" class="label" text-anchor="middle">Async send</text>
+<text x="350.20" y="472.00" class="small" text-anchor="middle">6,668,900</text>
+<rect x="447.60" y="163.49" width="126.80" height="266.51" fill="#37a36b" stroke="none"/>
+<text x="511.00" y="141.49" class="value" text-anchor="middle">0.867x</text>
+<text x="511.00" y="157.49" class="small" text-anchor="middle">13.3% lower</text>
+<text x="511.00" y="454.00" class="label" text-anchor="middle">Async + agg</text>
+<text x="511.00" y="472.00" class="small" text-anchor="middle">5,987,613</text>
+<rect x="608.40" y="173.35" width="126.80" height="256.65" fill="#d28a1e" stroke="none"/>
+<text x="671.80" y="151.35" class="value" text-anchor="middle">0.835x</text>
+<text x="671.80" y="167.35" class="small" text-anchor="middle">16.5% lower</text>
+<text x="671.80" y="454.00" class="label" text-anchor="middle">Async + counter</text>
+<text x="671.80" y="472.00" class="small" text-anchor="middle">5,766,058</text>
+<rect x="769.20" y="175.18" width="126.80" height="254.82" fill="#b84a62" stroke="none"/>
+<text x="832.60" y="153.18" class="value" text-anchor="middle">0.829x</text>
+<text x="832.60" y="169.18" class="small" text-anchor="middle">17.1% lower</text>
+<text x="832.60" y="454.00" class="label" text-anchor="middle">Full SmartNIC</text>
+<text x="832.60" y="472.00" class="small" text-anchor="middle">5,724,828</text>
+<text x="92.00" y="512.00" class="subtitle" text-anchor="start">Baseline average latency: 6,903,347 cycles</text>
+</svg>

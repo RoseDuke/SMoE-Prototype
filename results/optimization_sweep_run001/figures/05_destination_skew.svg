@@ -1,0 +1,54 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="980" height="580" viewBox="0 0 980 580">
+<style>
+text{font-family:Arial,Helvetica,sans-serif;fill:#1f252e}
+.title{font-size:22px;font-weight:700}
+.subtitle{font-size:13px;fill:#6f7a89}
+.axis{stroke:#31363f;stroke-width:1.2}
+.grid{stroke:#d8dee8;stroke-width:1}
+.tick{font-size:11px;fill:#6f7a89}
+.label{font-size:12px;fill:#1f252e}
+.small{font-size:11px;fill:#6f7a89}
+.value{font-size:12px;font-weight:700;fill:#1f252e}
+</style>
+<rect x="0" y="0" width="980" height="580" fill="#ffffff"/>
+<text x="36.00" y="42.00" class="title" text-anchor="start">Destination skew and aggregation effect</text>
+<text x="36.00" y="64.00" class="subtitle" text-anchor="start">Token load remains skewed; aggregation reduces packets but does not rebalance expert demand.</text>
+<line x1="90.00" y1="96.00" x2="90.00" y2="430.00" class="axis"/>
+<line x1="90.00" y1="430.00" x2="920.00" y2="430.00" class="axis"/>
+<line x1="90.00" y1="430.00" x2="920.00" y2="430.00" class="grid"/>
+<text x="82.00" y="434.00" class="tick" text-anchor="end">0.0k</text>
+<line x1="90.00" y1="363.20" x2="920.00" y2="363.20" class="grid"/>
+<text x="82.00" y="367.20" class="tick" text-anchor="end">0.4k</text>
+<line x1="90.00" y1="296.40" x2="920.00" y2="296.40" class="grid"/>
+<text x="82.00" y="300.40" class="tick" text-anchor="end">0.8k</text>
+<line x1="90.00" y1="229.60" x2="920.00" y2="229.60" class="grid"/>
+<text x="82.00" y="233.60" class="tick" text-anchor="end">1.2k</text>
+<line x1="90.00" y1="162.80" x2="920.00" y2="162.80" class="grid"/>
+<text x="82.00" y="166.80" class="tick" text-anchor="end">1.5k</text>
+<line x1="90.00" y1="96.00" x2="920.00" y2="96.00" class="grid"/>
+<text x="82.00" y="100.00" class="tick" text-anchor="end">1.9k</text>
+<rect x="148.00" y="98.61" width="62.50" height="331.39" fill="#6d7480" stroke="none"/>
+<text x="179.25" y="90.61" class="small" text-anchor="middle">1,902</text>
+<rect x="220.50" y="347.07" width="62.50" height="82.93" fill="#b84a62" stroke="none"/>
+<text x="251.75" y="339.07" class="small" text-anchor="middle">476</text>
+<text x="215.50" y="458.00" class="label" text-anchor="middle">dst 0</text>
+<rect x="341.00" y="215.87" width="62.50" height="214.13" fill="#6d7480" stroke="none"/>
+<text x="372.25" y="207.87" class="small" text-anchor="middle">1,229</text>
+<rect x="413.50" y="375.99" width="62.50" height="54.01" fill="#b84a62" stroke="none"/>
+<text x="444.75" y="367.99" class="small" text-anchor="middle">310</text>
+<text x="408.50" y="458.00" class="label" text-anchor="middle">dst 1</text>
+<rect x="534.00" y="290.62" width="62.50" height="139.38" fill="#6d7480" stroke="none"/>
+<text x="565.25" y="282.62" class="small" text-anchor="middle">800</text>
+<rect x="606.50" y="394.81" width="62.50" height="35.19" fill="#b84a62" stroke="none"/>
+<text x="637.75" y="386.81" class="small" text-anchor="middle">202</text>
+<text x="601.50" y="458.00" class="label" text-anchor="middle">dst 2</text>
+<rect x="727.00" y="96.00" width="62.50" height="334.00" fill="#6d7480" stroke="none"/>
+<text x="758.25" y="88.00" class="small" text-anchor="middle">1,917</text>
+<rect x="799.50" y="346.37" width="62.50" height="83.63" fill="#b84a62" stroke="none"/>
+<text x="830.75" y="338.37" class="small" text-anchor="middle">480</text>
+<text x="794.50" y="458.00" class="label" text-anchor="middle">dst 3</text>
+<rect x="90.00" y="508.00" width="16.00" height="16.00" fill="#6d7480" stroke="none"/>
+<text x="114.00" y="521.00" class="label" text-anchor="start">Tokens sent</text>
+<rect x="238.00" y="508.00" width="16.00" height="16.00" fill="#b84a62" stroke="none"/>
+<text x="262.00" y="521.00" class="label" text-anchor="start">Full SmartNIC packets</text>
+</svg>

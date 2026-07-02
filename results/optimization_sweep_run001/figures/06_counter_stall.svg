@@ -1,0 +1,41 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="860" height="520" viewBox="0 0 860 520">
+<style>
+text{font-family:Arial,Helvetica,sans-serif;fill:#1f252e}
+.title{font-size:22px;font-weight:700}
+.subtitle{font-size:13px;fill:#6f7a89}
+.axis{stroke:#31363f;stroke-width:1.2}
+.grid{stroke:#d8dee8;stroke-width:1}
+.tick{font-size:11px;fill:#6f7a89}
+.label{font-size:12px;fill:#1f252e}
+.small{font-size:11px;fill:#6f7a89}
+.value{font-size:12px;font-weight:700;fill:#1f252e}
+</style>
+<rect x="0" y="0" width="860" height="520" fill="#ffffff"/>
+<text x="36.00" y="42.00" class="title" text-anchor="start">Counter stall side effect</text>
+<text x="36.00" y="64.00" class="subtitle" text-anchor="start">Expert counters can intentionally defer sends; this is the modeled control cost.</text>
+<line x1="90.00" y1="94.00" x2="90.00" y2="382.00" class="axis"/>
+<line x1="90.00" y1="382.00" x2="800.00" y2="382.00" class="axis"/>
+<line x1="90.00" y1="382.00" x2="800.00" y2="382.00" class="grid"/>
+<text x="82.00" y="386.00" class="tick" text-anchor="end">0.0k</text>
+<line x1="90.00" y1="310.00" x2="800.00" y2="310.00" class="grid"/>
+<text x="82.00" y="314.00" class="tick" text-anchor="end">7.3k</text>
+<line x1="90.00" y1="238.00" x2="800.00" y2="238.00" class="grid"/>
+<text x="82.00" y="242.00" class="tick" text-anchor="end">14.6k</text>
+<line x1="90.00" y1="166.00" x2="800.00" y2="166.00" class="grid"/>
+<text x="82.00" y="170.00" class="tick" text-anchor="end">21.9k</text>
+<line x1="90.00" y1="94.00" x2="800.00" y2="94.00" class="grid"/>
+<text x="82.00" y="98.00" class="tick" text-anchor="end">29.2k</text>
+<rect x="138.00" y="100.90" width="117.50" height="281.10" fill="#b84a62" stroke="none"/>
+<text x="196.75" y="90.90" class="value" text-anchor="middle">28,500</text>
+<text x="196.75" y="410.00" class="label" text-anchor="middle">dst 0</text>
+<rect x="303.50" y="213.34" width="117.50" height="168.66" fill="#b84a62" stroke="none"/>
+<text x="362.25" y="203.34" class="value" text-anchor="middle">17,100</text>
+<text x="362.25" y="410.00" class="label" text-anchor="middle">dst 1</text>
+<rect x="469.00" y="306.05" width="117.50" height="75.95" fill="#b84a62" stroke="none"/>
+<text x="527.75" y="296.05" class="value" text-anchor="middle">7,700</text>
+<text x="527.75" y="410.00" class="label" text-anchor="middle">dst 2</text>
+<rect x="634.50" y="94.00" width="117.50" height="288.00" fill="#b84a62" stroke="none"/>
+<text x="693.25" y="84.00" class="value" text-anchor="middle">29,200</text>
+<text x="693.25" y="410.00" class="label" text-anchor="middle">dst 3</text>
+<text x="90.00" y="458.00" class="subtitle" text-anchor="start">Total counter stall cycles: 82,500.</text>
+</svg>
