@@ -22,11 +22,17 @@ struct SimulatorConfig {
     std::uint64_t packet_fixed_overhead_cycles = 20;
 
     std::uint64_t receiver_processing_cycles = 100;
+    std::uint64_t expert_counter_return_cycles = 100;
 
     SchedulingPolicy scheduling_policy = SchedulingPolicy::RoundRobin;
 
     bool enable_credit_control = false;
     bool enable_aggregation = false;
+    bool enable_async_sending = true;
+    bool enable_expert_counters = false;
+    bool enable_blocked_token_reorder = true;
+
+    std::uint32_t expert_counter_limit = 0;
 };
 
 SimulatorConfig read_config_file(const std::string& path);

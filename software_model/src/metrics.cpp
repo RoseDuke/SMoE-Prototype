@@ -64,6 +64,7 @@ SummaryMetrics compute_summary_metrics(
         metrics.total_packets += destination.total_packets_sent;
         metrics.maximum_queue_depth = std::max(metrics.maximum_queue_depth, destination.max_queue_depth);
         metrics.total_credit_stall_cycles += destination.credit_stall_cycles;
+        metrics.total_counter_stall_cycles += destination.counter_stall_cycles;
     }
 
     return metrics;
@@ -83,7 +84,7 @@ void write_records_csv(
     }
 
     output << "token_id,dst_rank,arrival_cycle,enqueue_cycle,dispatch_cycle,completion_cycle,"
-           << "queue_delay,total_latency,queue_depth_at_enqueue,aggregation_size,credit_stalled\n";
+           << "queue_delay,total_latency,queue_depth_at_enqueue,aggregation_size,credit_stalled,counter_stalled\n";
     for (const DispatchRecord& record : sorted) {
         output << record.token_id << ','
                << record.dst_rank << ','
@@ -95,7 +96,8 @@ void write_records_csv(
                << (record.completion_cycle - record.arrival_cycle) << ','
                << record.queue_depth_at_enqueue << ','
                << record.aggregation_size << ','
-               << (record.credit_stalled ? "true" : "false") << '\n';
+               << (record.credit_stalled ? "true" : "false") << ','
+               << (record.counter_stalled ? "true" : "false") << '\n';
     }
 }
 
@@ -120,6 +122,7 @@ void write_summary_file(
     output << "Average queue delay cycles: " << metrics.average_queue_delay_cycles << '\n';
     output << "Maximum queue depth: " << metrics.maximum_queue_depth << '\n';
     output << "Total credit stall cycles: " << metrics.total_credit_stall_cycles << '\n';
+    output << "Total counter stall cycles: " << metrics.total_counter_stall_cycles << '\n';
     output << '\n';
 
     for (std::size_t index = 0; index < destinations.size(); ++index) {
@@ -129,5 +132,6 @@ void write_summary_file(
         output << "  Packets sent: " << destination.total_packets_sent << '\n';
         output << "  Maximum queue depth: " << destination.max_queue_depth << '\n';
         output << "  Credit stall cycles: " << destination.credit_stall_cycles << '\n';
+        output << "  Counter stall cycles: " << destination.counter_stall_cycles << '\n';
     }
 }

@@ -2,6 +2,7 @@
 
 #include <cstdint>
 #include <deque>
+#include <unordered_map>
 
 struct TokenDescriptor {
     std::uint64_t arrival_cycle = 0;
@@ -27,6 +28,7 @@ struct DispatchRecord {
     std::uint32_t aggregation_size = 1;
 
     bool credit_stalled = false;
+    bool counter_stalled = false;
 };
 
 struct DestinationState {
@@ -38,14 +40,18 @@ struct DestinationState {
     std::uint64_t total_tokens_sent = 0;
     std::uint64_t total_packets_sent = 0;
     std::uint64_t credit_stall_cycles = 0;
+    std::uint64_t counter_stall_cycles = 0;
 
     std::uint32_t max_queue_depth = 0;
+
+    std::unordered_map<std::uint32_t, std::uint32_t> expert_tokens_in_flight;
 };
 
 enum class EventType {
     TokenArrival,
     TransmissionComplete,
-    CreditReturn
+    CreditReturn,
+    ExpertCounterReturn
 };
 
 struct Event {
@@ -63,6 +69,8 @@ inline int event_type_priority(EventType type) {
     case EventType::TransmissionComplete:
         return 0;
     case EventType::CreditReturn:
+        return 1;
+    case EventType::ExpertCounterReturn:
         return 1;
     case EventType::TokenArrival:
         return 2;

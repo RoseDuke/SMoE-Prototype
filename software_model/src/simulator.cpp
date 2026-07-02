@@ -4,6 +4,18 @@
 #include <cassert>
 #include <limits>
 #include <stdexcept>
+#include <unordered_map>
+
+namespace {
+
+constexpr std::size_t kNoDispatchableToken = std::numeric_limits<std::size_t>::max();
+
+std::uint64_t batch_layer_key(const TokenDescriptor& token) {
+    return (static_cast<std::uint64_t>(token.batch_id) << 32U) |
+           static_cast<std::uint64_t>(token.layer_id);
+}
+
+} // namespace
 
 Simulator::Simulator(SimulatorConfig config)
     : config_(config),
@@ -21,8 +33,10 @@ std::vector<DispatchRecord> Simulator::run(const std::vector<TokenDescriptor>& t
     records_.clear();
     token_index_by_id_.clear();
     queue_depth_at_enqueue_by_id_.clear();
+    enqueue_cycle_by_id_.clear();
     completed_token_ids_.clear();
     credit_stalled_token_ids_.clear();
+    counter_stalled_token_ids_.clear();
     current_cycle_ = 0;
     final_cycle_ = 0;
     next_sequence_number_ = 0;
@@ -38,6 +52,19 @@ std::vector<DispatchRecord> Simulator::run(const std::vector<TokenDescriptor>& t
         destination.max_credits = config_.initial_credits_per_destination;
     }
 
+    std::unordered_map<std::uint64_t, std::uint64_t> sync_ready_cycle_by_group;
+    if (!config_.enable_async_sending) {
+        for (const TokenDescriptor& token : trace_) {
+            const std::uint64_t key = batch_layer_key(token);
+            auto iter = sync_ready_cycle_by_group.find(key);
+            if (iter == sync_ready_cycle_by_group.end()) {
+                sync_ready_cycle_by_group.emplace(key, token.arrival_cycle);
+            } else {
+                iter->second = std::max(iter->second, token.arrival_cycle);
+            }
+        }
+    }
+
     for (std::size_t index = 0; index < trace_.size(); ++index) {
         const TokenDescriptor& token = trace_[index];
         if (token.dst_rank >= config_.num_destinations) {
@@ -49,8 +76,12 @@ std::vector<DispatchRecord> Simulator::run(const std::vector<TokenDescriptor>& t
         if (!token_index_by_id_.emplace(token.token_id, index).second) {
             throw std::runtime_error("Duplicate token_id in simulator input");
         }
+        const std::uint64_t enqueue_cycle =
+            config_.enable_async_sending
+                ? token.arrival_cycle
+                : sync_ready_cycle_by_group.at(batch_layer_key(token));
         events_.push(Event{
-            token.arrival_cycle,
+            enqueue_cycle,
             EventType::TokenArrival,
             token.dst_rank,
             token.token_id,
@@ -115,6 +146,9 @@ std::vector<DispatchRecord> Simulator::run(const std::vector<TokenDescriptor>& t
             case EventType::CreditReturn:
                 process_credit_return(event);
                 break;
+            case EventType::ExpertCounterReturn:
+                process_expert_counter_return(event);
+                break;
             }
         }
     }
@@ -144,6 +178,7 @@ void Simulator::process_token_arrival(const Event& event) {
     DestinationState& destination = destinations_[token.dst_rank];
     queue_depth_at_enqueue_by_id_[token.token_id] =
         static_cast<std::uint32_t>(destination.queue.size() + 1U);
+    enqueue_cycle_by_id_[token.token_id] = current_cycle_;
     destination.queue.push_back(token);
     destination.max_queue_depth = std::max(
         destination.max_queue_depth,
@@ -167,6 +202,27 @@ void Simulator::process_credit_return(const Event& event) {
     }
     destination.available_credits += 1;
     assert(destination.available_credits <= destination.max_credits);
+}
+
+void Simulator::process_expert_counter_return(const Event& event) {
+    if (event.destination >= destinations_.size()) {
+        throw std::runtime_error("ExpertCounterReturn event has invalid destination");
+    }
+    const auto iter = token_index_by_id_.find(event.token_id);
+    if (iter == token_index_by_id_.end()) {
+        throw std::runtime_error("ExpertCounterReturn event references unknown token_id");
+    }
+    const TokenDescriptor& token = trace_[iter->second];
+    DestinationState& destination = destinations_[event.destination];
+    auto counter_iter = destination.expert_tokens_in_flight.find(token.expert_id);
+    if (counter_iter == destination.expert_tokens_in_flight.end() ||
+        counter_iter->second == 0) {
+        throw std::runtime_error("Expert counter return would underflow");
+    }
+    counter_iter->second -= 1;
+    if (counter_iter->second == 0) {
+        destination.expert_tokens_in_flight.erase(counter_iter);
+    }
 }
 
 bool Simulator::try_dispatch() {
@@ -198,20 +254,31 @@ bool Simulator::try_dispatch() {
     assert(!destination.queue.empty());
     assert(!config_.enable_credit_control || destination.available_credits > 0);
 
-    const std::uint32_t aggregation_size =
-        config_.enable_aggregation
-            ? std::min<std::uint32_t>(
-                  config_.aggregation_threshold,
-                  static_cast<std::uint32_t>(destination.queue.size()))
-            : 1U;
-
     std::vector<TokenDescriptor> packet_tokens;
-    packet_tokens.reserve(aggregation_size);
+    const std::uint32_t target_packet_tokens =
+        config_.enable_aggregation ? config_.aggregation_threshold : 1U;
+    packet_tokens.reserve(target_packet_tokens);
     std::uint64_t total_payload_bytes = 0;
-    for (std::uint32_t count = 0; count < aggregation_size; ++count) {
-        packet_tokens.push_back(destination.queue.front());
-        total_payload_bytes += destination.queue.front().payload_bytes;
-        destination.queue.pop_front();
+    std::unordered_map<std::uint32_t, std::uint32_t> local_expert_counts;
+    while (packet_tokens.size() < target_packet_tokens) {
+        const std::size_t token_index = find_dispatchable_token_index(destination_index);
+        if (token_index == kNoDispatchableToken) {
+            break;
+        }
+        const TokenDescriptor token = destination.queue[token_index];
+        if (!token_has_expert_counter_slot(destination, token, local_expert_counts)) {
+            break;
+        }
+        packet_tokens.push_back(token);
+        total_payload_bytes += token.payload_bytes;
+        local_expert_counts[token.expert_id] += 1;
+        destination.queue.erase(destination.queue.begin() + static_cast<std::ptrdiff_t>(token_index));
+        if (!config_.enable_aggregation) {
+            break;
+        }
+    }
+    if (packet_tokens.empty()) {
+        return false;
     }
 
     if (config_.enable_credit_control) {
@@ -230,14 +297,20 @@ bool Simulator::try_dispatch() {
 
     destination.total_packets_sent += 1;
     destination.total_tokens_sent += packet_tokens.size();
+    if (config_.enable_expert_counters) {
+        for (const TokenDescriptor& token : packet_tokens) {
+            destination.expert_tokens_in_flight[token.expert_id] += 1;
+        }
+    }
 
     for (const TokenDescriptor& token : packet_tokens) {
         assert(dispatch_cycle >= token.arrival_cycle);
+        const std::uint64_t enqueue_cycle = token_enqueue_cycle(token.token_id);
         DispatchRecord record;
         record.token_id = token.token_id;
         record.dst_rank = token.dst_rank;
         record.arrival_cycle = token.arrival_cycle;
-        record.enqueue_cycle = token.arrival_cycle;
+        record.enqueue_cycle = enqueue_cycle;
         record.dispatch_cycle = dispatch_cycle;
         record.completion_cycle = completion_cycle;
         const auto depth_iter = queue_depth_at_enqueue_by_id_.find(token.token_id);
@@ -245,9 +318,11 @@ bool Simulator::try_dispatch() {
             throw std::runtime_error("Missing queue depth for token");
         }
         record.queue_depth_at_enqueue = depth_iter->second;
-        record.aggregation_size = aggregation_size;
+        record.aggregation_size = static_cast<std::uint32_t>(packet_tokens.size());
         record.credit_stalled =
             credit_stalled_token_ids_.find(token.token_id) != credit_stalled_token_ids_.end();
+        record.counter_stalled =
+            counter_stalled_token_ids_.find(token.token_id) != counter_stalled_token_ids_.end();
         records_.push_back(record);
 
         if (!completed_token_ids_.insert(token.token_id).second) {
@@ -270,6 +345,16 @@ bool Simulator::try_dispatch() {
             packet_tokens.front().token_id,
             next_sequence_number_++});
     }
+    if (config_.enable_expert_counters) {
+        for (const TokenDescriptor& token : packet_tokens) {
+            events_.push(Event{
+                completion_cycle + config_.expert_counter_return_cycles,
+                EventType::ExpertCounterReturn,
+                destination_index,
+                token.token_id,
+                next_sequence_number_++});
+        }
+    }
 
     return true;
 }
@@ -283,6 +368,9 @@ bool Simulator::can_dispatch_destination(std::uint32_t destination_index) const 
         return false;
     }
     if (config_.enable_credit_control && destination.available_credits == 0) {
+        return false;
+    }
+    if (find_dispatchable_token_index(destination_index) == kNoDispatchableToken) {
         return false;
     }
     if (!config_.enable_aggregation) {
@@ -302,6 +390,53 @@ bool Simulator::can_dispatch_destination(std::uint32_t destination_index) const 
            current_cycle_ - oldest_arrival >= config_.aggregation_timeout_cycles;
 }
 
+std::size_t Simulator::find_dispatchable_token_index(std::uint32_t destination_index) const {
+    if (destination_index >= destinations_.size()) {
+        return kNoDispatchableToken;
+    }
+    const DestinationState& destination = destinations_[destination_index];
+    if (destination.queue.empty()) {
+        return kNoDispatchableToken;
+    }
+    if (!config_.enable_expert_counters) {
+        return 0;
+    }
+    if (!config_.enable_blocked_token_reorder) {
+        return token_has_expert_counter_slot(destination, destination.queue.front())
+                   ? 0
+                   : kNoDispatchableToken;
+    }
+    for (std::size_t index = 0; index < destination.queue.size(); ++index) {
+        if (token_has_expert_counter_slot(destination, destination.queue[index])) {
+            return index;
+        }
+    }
+    return kNoDispatchableToken;
+}
+
+bool Simulator::token_has_expert_counter_slot(
+    const DestinationState& destination,
+    const TokenDescriptor& token) const {
+    const std::unordered_map<std::uint32_t, std::uint32_t> empty;
+    return token_has_expert_counter_slot(destination, token, empty);
+}
+
+bool Simulator::token_has_expert_counter_slot(
+    const DestinationState& destination,
+    const TokenDescriptor& token,
+    const std::unordered_map<std::uint32_t, std::uint32_t>& local_counts) const {
+    if (!config_.enable_expert_counters) {
+        return true;
+    }
+    auto iter = destination.expert_tokens_in_flight.find(token.expert_id);
+    const std::uint32_t in_flight =
+        iter == destination.expert_tokens_in_flight.end() ? 0U : iter->second;
+    auto local_iter = local_counts.find(token.expert_id);
+    const std::uint32_t local =
+        local_iter == local_counts.end() ? 0U : local_iter->second;
+    return in_flight + local < config_.expert_counter_limit;
+}
+
 std::uint64_t Simulator::compute_service_cycles(std::uint64_t payload_bytes) const {
     assert(config_.link_bytes_per_cycle > 0);
     const std::uint64_t transfer_cycles =
@@ -309,16 +444,29 @@ std::uint64_t Simulator::compute_service_cycles(std::uint64_t payload_bytes) con
     return config_.packet_fixed_overhead_cycles + transfer_cycles;
 }
 
+std::uint64_t Simulator::token_enqueue_cycle(std::uint32_t token_id) const {
+    const auto iter = enqueue_cycle_by_id_.find(token_id);
+    if (iter == enqueue_cycle_by_id_.end()) {
+        throw std::runtime_error("Missing enqueue cycle for token");
+    }
+    return iter->second;
+}
+
 std::uint64_t Simulator::next_timeout_cycle() const {
     if (!config_.enable_aggregation || config_.aggregation_timeout_cycles == 0) {
         return std::numeric_limits<std::uint64_t>::max();
     }
     std::uint64_t best = std::numeric_limits<std::uint64_t>::max();
-    for (const DestinationState& destination : destinations_) {
+    for (std::size_t destination_index = 0; destination_index < destinations_.size(); ++destination_index) {
+        const DestinationState& destination = destinations_[destination_index];
         if (destination.queue.empty()) {
             continue;
         }
         if (config_.enable_credit_control && destination.available_credits == 0) {
+            continue;
+        }
+        if (find_dispatchable_token_index(static_cast<std::uint32_t>(destination_index)) ==
+            kNoDispatchableToken) {
             continue;
         }
         if (destination.queue.size() >= config_.aggregation_threshold) {
@@ -341,7 +489,8 @@ bool Simulator::all_queues_empty() const {
 }
 
 void Simulator::account_credit_stalls_until(std::uint64_t next_cycle) {
-    if (!config_.enable_credit_control || next_cycle <= current_cycle_) {
+    if ((!config_.enable_credit_control && !config_.enable_expert_counters) ||
+        next_cycle <= current_cycle_) {
         return;
     }
     const std::uint64_t delta = next_cycle - current_cycle_;
@@ -351,6 +500,21 @@ void Simulator::account_credit_stalls_until(std::uint64_t next_cycle) {
             destination.credit_stall_cycles += delta;
             for (const TokenDescriptor& token : destination.queue) {
                 credit_stalled_token_ids_.insert(token.token_id);
+            }
+        }
+        if (config_.enable_expert_counters && !destination.queue.empty()) {
+            bool any_counter_blocked = false;
+            bool any_dispatchable = false;
+            for (const TokenDescriptor& token : destination.queue) {
+                if (token_has_expert_counter_slot(destination, token)) {
+                    any_dispatchable = true;
+                } else {
+                    counter_stalled_token_ids_.insert(token.token_id);
+                    any_counter_blocked = true;
+                }
+            }
+            if (any_counter_blocked && (!any_dispatchable || !config_.enable_blocked_token_reorder)) {
+                destination.counter_stall_cycles += delta;
             }
         }
     }
@@ -369,6 +533,12 @@ void Simulator::validate_config() const {
     if (config_.enable_credit_control && config_.initial_credits_per_destination == 0) {
         throw std::runtime_error("initial_credits_per_destination must be greater than zero when credit control is enabled");
     }
+    if (config_.enable_expert_counters && config_.expert_counter_limit == 0) {
+        throw std::runtime_error("expert_counter_limit must be greater than zero when expert counters are enabled");
+    }
+    if (config_.expert_counter_return_cycles == 0 && config_.enable_expert_counters) {
+        throw std::runtime_error("expert_counter_return_cycles must be greater than zero when expert counters are enabled");
+    }
 }
 
 void Simulator::validate_end_state(const std::vector<TokenDescriptor>& trace) const {
@@ -383,6 +553,9 @@ void Simulator::validate_end_state(const std::vector<TokenDescriptor>& trace) co
         }
         if (destination.available_credits > destination.max_credits) {
             throw std::runtime_error("Destination credits exceed maximum");
+        }
+        if (!destination.expert_tokens_in_flight.empty()) {
+            throw std::runtime_error("Simulation ended with non-empty expert counter state");
         }
     }
     for (const DispatchRecord& record : records_) {

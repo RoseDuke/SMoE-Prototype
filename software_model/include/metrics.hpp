@@ -19,6 +19,7 @@ struct SummaryMetrics {
     double average_queue_delay_cycles = 0.0;
     std::uint32_t maximum_queue_depth = 0;
     std::uint64_t total_credit_stall_cycles = 0;
+    std::uint64_t total_counter_stall_cycles = 0;
 };
 
 SummaryMetrics compute_summary_metrics(

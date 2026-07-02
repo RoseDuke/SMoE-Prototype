@@ -209,6 +209,48 @@ void test_aggregation_timeout_drains_partial_packet() {
     }
 }
 
+void test_synchronous_sending_waits_for_batch_layer_barrier() {
+    SimulatorConfig config = baseline_config();
+    config.enable_async_sending = false;
+
+    std::vector<TokenDescriptor> trace = {
+        TokenDescriptor{0, 0, 7, 3, 0, 0, 0, 64},
+        TokenDescriptor{10, 1, 7, 3, 0, 1, 1, 64},
+    };
+
+    Simulator simulator(config);
+    const std::vector<DispatchRecord> records = sorted_records(simulator.run(trace));
+    assert(records.size() == 2);
+    assert(records[0].enqueue_cycle == 10);
+    assert(records[1].enqueue_cycle == 10);
+    assert(records[0].dispatch_cycle >= 10);
+    assert(records[1].dispatch_cycle >= 10);
+}
+
+void test_expert_counter_reorders_blocked_hot_expert() {
+    SimulatorConfig config = baseline_config();
+    config.enable_expert_counters = true;
+    config.enable_blocked_token_reorder = true;
+    config.expert_counter_limit = 1;
+    config.expert_counter_return_cycles = 100;
+    config.scheduling_policy = SchedulingPolicy::RoundRobin;
+
+    std::vector<TokenDescriptor> trace = {
+        TokenDescriptor{0, 0, 0, 0, 0, 0, 5, 64},
+        TokenDescriptor{0, 1, 0, 0, 0, 0, 5, 64},
+        TokenDescriptor{0, 2, 0, 0, 0, 0, 6, 64},
+    };
+
+    Simulator simulator(config);
+    const std::vector<DispatchRecord> records = sorted_records(simulator.run(trace));
+    assert(records.size() == 3);
+    assert(records[0].dispatch_cycle == 0);
+    assert(records[2].dispatch_cycle == 22);
+    assert(records[1].dispatch_cycle >= 122);
+    assert(records[1].counter_stalled);
+    assert(simulator.destination_states()[0].counter_stall_cycles > 0);
+}
+
 void test_end_state_and_determinism() {
     SimulatorConfig config = baseline_config();
     config.scheduling_policy = SchedulingPolicy::LargestQueue;
@@ -248,6 +290,8 @@ int main() {
     test_credit_flow_control();
     test_aggregation_reduces_packet_count();
     test_aggregation_timeout_drains_partial_packet();
+    test_synchronous_sending_waits_for_batch_layer_barrier();
+    test_expert_counter_reorders_blocked_hot_expert();
     test_end_state_and_determinism();
 
     std::cout << "All reference model tests passed\n";

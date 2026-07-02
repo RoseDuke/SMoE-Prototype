@@ -66,6 +66,9 @@ void validate_config(const SimulatorConfig& config) {
     if (config.enable_credit_control && config.initial_credits_per_destination == 0) {
         throw std::runtime_error("initial_credits_per_destination must be greater than zero when credit control is enabled");
     }
+    if (config.enable_expert_counters && config.expert_counter_limit == 0) {
+        throw std::runtime_error("expert_counter_limit must be greater than zero when expert counters are enabled");
+    }
 }
 
 } // namespace
@@ -149,12 +152,22 @@ SimulatorConfig read_config_file(const std::string& path) {
             config.packet_fixed_overhead_cycles = parse_u64(key, value);
         } else if (key == "receiver_processing_cycles") {
             config.receiver_processing_cycles = parse_u64(key, value);
+        } else if (key == "expert_counter_return_cycles") {
+            config.expert_counter_return_cycles = parse_u64(key, value);
         } else if (key == "scheduling_policy") {
             config.scheduling_policy = parse_scheduling_policy(value);
         } else if (key == "enable_credit_control") {
             config.enable_credit_control = parse_bool(key, value);
         } else if (key == "enable_aggregation") {
             config.enable_aggregation = parse_bool(key, value);
+        } else if (key == "enable_async_sending") {
+            config.enable_async_sending = parse_bool(key, value);
+        } else if (key == "enable_expert_counters") {
+            config.enable_expert_counters = parse_bool(key, value);
+        } else if (key == "enable_blocked_token_reorder") {
+            config.enable_blocked_token_reorder = parse_bool(key, value);
+        } else if (key == "expert_counter_limit") {
+            config.expert_counter_limit = parse_u32(key, value);
         } else {
             throw std::runtime_error("Unknown config key: " + key);
         }
