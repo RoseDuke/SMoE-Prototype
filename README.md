@@ -51,6 +51,57 @@ async_expert_counter
 full_smartnic
 ```
 
+## MoE Data-Graph Prototype Run
+
+The prototype can also run directly from the MoE intermediate data extracted by
+`smartnic_input_constructor`.  This path is a SmartNIC functional prototype over
+simulated/replayed MoE dispatch data.  It does not require, measure, or assume a
+real SmartNIC-GPU link.
+
+Default input:
+
+```text
+../smartnic_input_constructor/gpu_runs/run001_mixtral_decode_bs64_out16/data_graph
+```
+
+Run:
+
+```bash
+bash scripts/run_moe_data_graph_prototype.sh
+```
+
+This generates:
+
+```text
+results/moe_data_graph_run001/smartnic_trace.csv
+results/moe_data_graph_run001/synchronous_baseline_summary.txt
+results/moe_data_graph_run001/async_only_summary.txt
+results/moe_data_graph_run001/async_aggregation_summary.txt
+results/moe_data_graph_run001/async_expert_counter_summary.txt
+results/moe_data_graph_run001/full_smartnic_summary.txt
+```
+
+The converter uses `data_graph/expert_flows.csv`.  By default each expert-flow
+row is treated as one dispatchable chunk, and `ready_time_us` is converted with:
+
+```text
+arrival_cycle = round(ready_time_us * 1000)
+```
+
+Because the current extracted `ready_time_us` values are phase-relative rather
+than a global decode-call timeline, decode calls are collapsed into
+`batch_id=0` by default.  To preserve decode-call identity as dense batch IDs:
+
+```bash
+PRESERVE_DECODE_BATCHES=1 bash scripts/run_moe_data_graph_prototype.sh
+```
+
+To expand each flow into `token_count` descriptors instead of one chunk:
+
+```bash
+EXPAND_TOKEN_COUNT=1 bash scripts/run_moe_data_graph_prototype.sh
+```
+
 ## Configuration Documentation
 
 Configuration files use `key=value` lines. Supported keys:

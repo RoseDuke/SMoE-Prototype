@@ -1,0 +1,11 @@
+token_id,dst_rank,arrival_cycle,enqueue_cycle,dispatch_cycle,completion_cycle,queue_delay,total_latency,queue_depth_at_enqueue,aggregation_size,credit_stalled,counter_stalled
+0,0,0,2,2,24,2,24,1,1,false,false
+1,0,0,2,68,90,68,90,2,1,false,false
+2,0,0,2,90,112,90,112,3,1,false,false
+3,0,0,2,112,134,112,134,4,1,false,false
+4,0,1,2,134,156,133,155,5,1,false,false
+5,0,1,2,156,178,155,177,6,1,false,false
+6,0,1,2,178,200,177,199,7,1,false,false
+7,0,1,2,200,222,199,221,8,1,false,false
+8,1,2,2,24,46,22,44,1,1,false,false
+9,2,2,2,46,68,44,66,1,1,false,false

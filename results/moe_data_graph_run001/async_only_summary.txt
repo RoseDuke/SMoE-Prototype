@@ -1,0 +1,37 @@
+Total tokens: 5848
+Total packets: 5848
+Final cycle: 12957920
+Throughput tokens/cycle: 0.000451
+Average latency cycles: 6668900.408858
+P50 latency cycles: 6850579
+P95 latency cycles: 12356000
+P99 latency cycles: 12734864
+Average queue delay cycles: 6666684.622264
+Maximum queue depth: 1907
+Total credit stall cycles: 0
+Total counter stall cycles: 0
+
+Destination 0:
+  Tokens sent: 1902
+  Packets sent: 1902
+  Maximum queue depth: 1885
+  Credit stall cycles: 0
+  Counter stall cycles: 0
+Destination 1:
+  Tokens sent: 1229
+  Packets sent: 1229
+  Maximum queue depth: 1204
+  Credit stall cycles: 0
+  Counter stall cycles: 0
+Destination 2:
+  Tokens sent: 800
+  Packets sent: 800
+  Maximum queue depth: 778
+  Credit stall cycles: 0
+  Counter stall cycles: 0
+Destination 3:
+  Tokens sent: 1917
+  Packets sent: 1917
+  Maximum queue depth: 1907
+  Credit stall cycles: 0
+  Counter stall cycles: 0
