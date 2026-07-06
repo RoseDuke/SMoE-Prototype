@@ -58,6 +58,19 @@ The prototype can also run directly from the MoE intermediate data extracted by
 simulated/replayed MoE dispatch data.  It does not require, measure, or assume a
 real SmartNIC-GPU link.
 
+## SmartNIC FPGA Prototype Plan
+
+The hardware implementation plan for CloudLab oct-build and U280 validation is
+documented in:
+
+```text
+SMARTNIC_PROTOTYPE_README.md
+```
+
+That document defines the required descriptor ABI, control registers, HLS
+blocks, validation flow, and staged milestones for turning this simulator into a
+trace-driven SmartNIC dispatch prototype.
+
 Default input:
 
 ```text
