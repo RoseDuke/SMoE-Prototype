@@ -29,5 +29,7 @@ add_executable(test_reference_model tests/test_reference_model.cpp)
 target_link_libraries(test_reference_model PRIVATE smartnic_ref_model)
 target_compile_options(test_reference_model PRIVATE -Wall -Wextra -Wpedantic -Werror)
 
+add_subdirectory(fpga)
+
 enable_testing()
 add_test(NAME reference_model_tests COMMAND test_reference_model)

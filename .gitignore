@@ -1,6 +1,16 @@
 build/
 results/*.csv
 results/*.txt
+results/fpga_*_smoke/
+results/fpga_v0_matrix/
+_x/
+.Xil/
+.ipcache/
+fpga/build/
+build_u280*.log
+v++_*.log
+v++_*.backup.log
+xcd.log
 *.o
 *.a
 *.so
