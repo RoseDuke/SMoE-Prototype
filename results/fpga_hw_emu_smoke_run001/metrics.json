@@ -1,0 +1,24 @@
+{
+  "status_code": 0,
+  "total_tokens": 10,
+  "total_packets": 4,
+  "final_cycle": 346,
+  "max_queue_depth": 4,
+  "aggregation_size_sum": 10,
+  "aggregation_timeout_flushes": 2,
+  "credit_stall_cycles": 0,
+  "counter_stall_cycles": 0,
+  "reorder_events": 0,
+  "errors": {
+    "queue_overflow": 0,
+    "malformed_descriptor": 0,
+    "event_overflow": 0,
+    "deadlock": 0
+  },
+  "destinations": [
+    {"destination": 0, "tokens": 8, "packets": 2, "max_queue_depth": 4, "credit_stall_cycles": 0, "counter_stall_cycles": 0},
+    {"destination": 1, "tokens": 1, "packets": 1, "max_queue_depth": 1, "credit_stall_cycles": 0, "counter_stall_cycles": 0},
+    {"destination": 2, "tokens": 1, "packets": 1, "max_queue_depth": 1, "credit_stall_cycles": 0, "counter_stall_cycles": 0},
+    {"destination": 3, "tokens": 0, "packets": 0, "max_queue_depth": 0, "credit_stall_cycles": 0, "counter_stall_cycles": 0}
+  ]
+}

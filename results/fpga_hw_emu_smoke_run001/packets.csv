@@ -1,0 +1,5 @@
+packet_id,dst_rank,aggregation_size,total_payload_bytes,first_token_id,dispatch_cycle,completion_cycle,token_ids
+0,0,4,256,0,0,28,0|1|2|3
+1,0,4,256,4,28,56,4|5|6|7
+2,1,1,64,8,202,224,8
+3,2,1,64,9,224,246,9

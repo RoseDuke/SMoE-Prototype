@@ -38,7 +38,7 @@ if [[ ! -s "${FPGA_ROOT}/build/smartnic_moe_dispatch_v0.xclbin" ]]; then
   exit 1
 fi
 
-xclbinutil --quiet \
+xclbinutil --quiet --force \
   --info "${FPGA_ROOT}/build/smartnic_moe_dispatch_v0.xclbin.info" \
   --input "${FPGA_ROOT}/build/smartnic_moe_dispatch_v0.xclbin"
 
