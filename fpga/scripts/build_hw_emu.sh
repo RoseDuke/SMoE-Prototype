@@ -8,6 +8,28 @@ TARGET="${TARGET:-hw_emu}"
 VIVADO_SYNTH_JOBS="${VIVADO_SYNTH_JOBS:-1}"
 VIVADO_IMPL_JOBS="${VIVADO_IMPL_JOBS:-1}"
 
+if ! command -v v++ >/dev/null 2>&1; then
+  for settings in \
+    "${VITIS_SETTINGS:-}" \
+    /fpga/Xilinx/Vivado/2023.2/.settings64-Vivado.sh \
+    /fpga/Xilinx/Vitis/2023.2/.settings64-Vitis.sh \
+    /fpga/Xilinx/Vitis_HLS/2023.2/.settings64-Vitis_HLS.sh; do
+    if [[ -n "${settings}" && -r "${settings}" ]]; then
+      # Source component settings directly because settings64.sh may reference
+      # optional tools that are not installed on this machine.
+      # shellcheck source=/dev/null
+      source "${settings}"
+    fi
+  done
+fi
+
+if ! command -v v++ >/dev/null 2>&1; then
+  echo "v++ was not found. Source Vitis first, for example:" >&2
+  echo "  source /fpga/Xilinx/Vitis/2023.2/settings64.sh" >&2
+  echo "or set VITIS_SETTINGS to a readable Vitis settings script." >&2
+  exit 1
+fi
+
 if [[ -z "${PLATFORM:-}" ]]; then
   echo "Set PLATFORM to the installed U280 platform name before running this script." >&2
   exit 1
