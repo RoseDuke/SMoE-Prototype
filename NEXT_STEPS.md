@@ -1,97 +1,79 @@
 # Next Steps
 
-Date: 2026-07-08
+Date: 2026-07-09
 
-## P0 Blocker: Rebuild and Preserve the Hardware Artifact
+## Current Status
 
-> [!CAUTION]
-> The previous U280 build completed, but its xclbin was left only in the build
-> node's git-ignored `fpga/build/` directory. It was not pushed to GitHub and is
-> not available in a fresh clone. A new hardware build is required.
-
-The highest-priority task is to rebuild the U280 xclbin and complete artifact
-handoff before releasing or reimaging the build node:
-
-1. Rebuild `fpga/build/smartnic_moe_dispatch_v0.xclbin` on the build node.
-2. Confirm that the file exists and is non-empty.
-3. Generate its `xclbinutil` metadata and SHA-256 checksum.
-4. Transfer the xclbin, metadata, and checksum to the FPGA node or durable
-   storage.
-5. Verify the checksum and platform compatibility on the FPGA node.
-6. Run the U280 smoke test.
-
-The exact transfer and verification commands are documented in
-[`fpga/README.md`](fpga/README.md#p0-artifact-handoff-from-build-node-to-fpga-node).
-The build node must remain available until the checksum reports `OK` on the
-destination.
-
-## Previous Build Result (Artifact Not Preserved)
-
-The previous build generated this local-only artifact:
+The U280 runtime artifacts are now tracked in git:
 
 ```text
+build/fpga_run_trace_xrt
 fpga/build/smartnic_moe_dispatch_v0.xclbin
 ```
 
-Build target:
+A fresh clone on a U280 FPGA node should be able to run the smoke test without
+rebuilding the host executable or the xclbin.
+
+The U280 node still needs the XRT runtime, driver, and matching shell:
 
 ```text
---target hw
-```
-
-Platform:
-
-```text
+/opt/xilinx/xrt/lib/libxrt_coreutil.so.2
 xilinx_u280_gen3x16_xdma_1_202211_1
 ```
 
-Build output summary:
+## What To Do After Opening a U280 Node
 
-```text
-Created fpga/build/smartnic_moe_dispatch_v0.xclbin
-Total elapsed time: 3h 40m 24s
+Clone the repository:
+
+```bash
+git clone git@github.com:RoseDuke/SMoE-Prototype.git
+cd SMoE-Prototype
 ```
 
-Important timing note:
+If the repository already exists on the U280 node, update it:
 
-```text
-DATA_CLK requested: 300 MHz
-DATA_CLK achieved:  281.4 MHz
+```bash
+cd SMoE-Prototype
+git pull
 ```
 
-Vitis auto-scaled the data clock down because one or more timing paths missed
-the original 300 MHz target. Treat the bitstream as a valid first hardware
-bring-up artifact, but record the achieved clock when reporting results.
+Check that the committed runtime artifacts are present:
 
-The build directory is intentionally ignored by git. Consequently, this
-artifact was not included in the `bulid finished` commit or pushed to GitHub.
+```bash
+test -x build/fpga_run_trace_xrt
+test -s fpga/build/smartnic_moe_dispatch_v0.xclbin
+```
 
-## Immediate Next Step After Rebuild and Handoff
+Check the FPGA/XRT runtime:
+
+```bash
+xbutil examine
+ldd build/fpga_run_trace_xrt | grep xrt_coreutil
+xclbinutil --info --input fpga/build/smartnic_moe_dispatch_v0.xclbin
+```
 
 Run the U280 smoke test:
 
 ```bash
-cd /users/RoseDuke/SMoE-Prototype/fpga
-bash scripts/run_u280_trace.sh \
-  --xclbin build/smartnic_moe_dispatch_v0.xclbin \
-  --trace ../tests/traces/tiny_skewed.csv \
-  --config ../configs/full_smartnic.cfg \
-  --out ../results/fpga_u280_smoke_run001
+bash fpga/scripts/run_u280_trace.sh \
+  --out results/fpga_u280_smoke_run001
 ```
 
-Expected behavior:
+Expected outputs:
 
-- XRT should program the U280 with `smartnic_moe_dispatch_v0.xclbin`.
-- The host runner should emit `tokens.csv`, `packets.csv`, and `summary.txt`
-  under `results/fpga_u280_smoke_run001`.
-- The run should complete without XRT programming or kernel execution errors.
+```text
+results/fpga_u280_smoke_run001/tokens.csv
+results/fpga_u280_smoke_run001/packets.csv
+results/fpga_u280_smoke_run001/summary.txt
+results/fpga_u280_smoke_run001/metrics.json
+```
 
-## Validate Against Simulator
+## Validate Against the Simulator
 
-After the U280 run, regenerate the simulator output and compare token records:
+If the U280 node also has the already-built simulator tools, compare hardware
+tokens against the simulator:
 
 ```bash
-cd /users/RoseDuke/SMoE-Prototype
 mkdir -p results/fpga_u280_smoke_run001_sim
 ./build/smartnic_ref \
   --trace tests/traces/tiny_skewed.csv \
@@ -103,42 +85,12 @@ mkdir -p results/fpga_u280_smoke_run001_sim
   --hw results/fpga_u280_smoke_run001/tokens.csv
 ```
 
-The expected validation message is:
+Expected validation message:
 
 ```text
 FPGA V0 token records match simulator output: 10 rows
 ```
 
-## If The U280 Run Fails
-
-First check that the card is visible:
-
-```bash
-xbutil examine
-```
-
-Then check whether the xclbin platform matches the installed shell:
-
-```bash
-xclbinutil --info --input fpga/build/smartnic_moe_dispatch_v0.xclbin
-```
-
-The xclbin should report:
-
-```text
-Platform VBNV: xilinx_u280_gen3x16_xdma_1_202211_1
-Content: Bitstream
-Kernels: smartnic_moe_dispatch_v0
-```
-
-## After Smoke Passes
-
-1. Save the U280 smoke outputs that matter: `tokens.csv`, `packets.csv`, and
-   `summary.txt`.
-2. Run a slightly larger trace/config matrix on hardware and compare each run
-   against the simulator.
-3. Decide whether the 281.4 MHz achieved data clock is acceptable for the first
-   prototype report, or whether to reduce timing pressure and rebuild for a
-   cleaner 300 MHz target.
-4. If the result should be preserved outside this machine, upload the xclbin as
-   a release artifact rather than committing it into git.
+If those simulator binaries are not present on the U280 runtime node, copy the
+hardware output files back to a build-capable machine and run the comparison
+there.

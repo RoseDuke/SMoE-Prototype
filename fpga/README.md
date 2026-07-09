@@ -1,11 +1,12 @@
 # FPGA SmartNIC Prototype
 
 > [!CAUTION]
-> **P0 — A successful build is not safely preserved until artifact handoff is
-> complete.** `fpga/build/` is ignored by git. Committing and pushing the
-> repository will not upload the xclbin. Do not release or reimage the build
-> node until the xclbin has been copied to the FPGA node or durable storage and
-> its checksum has been verified.
+> **Runtime artifact policy.** Most generated FPGA build files are ignored by
+> git, but the U280 smoke-test runtime artifacts are intentionally tracked:
+> `build/fpga_run_trace_xrt` and
+> `fpga/build/smartnic_moe_dispatch_v0.xclbin`. A fresh clone can run the U280
+> smoke test without rebuilding, provided the FPGA node has the matching U280
+> shell and XRT runtime installed.
 
 This directory contains the FPGA/HLS implementation scaffold for the
 trace-driven SmartNIC dispatch prototype.
@@ -83,7 +84,86 @@ export TARGET=hw_emu
 bash scripts/build_hw_emu.sh
 ```
 
-## P0 Artifact Handoff from Build Node to FPGA Node
+## Run on a U280 FPGA Node from a Fresh Clone
+
+Use this path when the U280 node is only a runtime machine and should not build
+the host executable or the xclbin.
+
+On the **U280 FPGA node**, clone or update the repository:
+
+```bash
+git clone git@github.com:RoseDuke/SMoE-Prototype.git
+cd SMoE-Prototype
+```
+
+If the repository already exists on the U280 node, update it instead:
+
+```bash
+cd SMoE-Prototype
+git pull
+```
+
+Confirm the required tracked runtime files are present:
+
+```bash
+test -x build/fpga_run_trace_xrt
+test -s fpga/build/smartnic_moe_dispatch_v0.xclbin
+```
+
+Confirm the node can see the FPGA and has XRT available:
+
+```bash
+xbutil examine
+ldd build/fpga_run_trace_xrt | grep xrt_coreutil
+```
+
+Run the default U280 smoke test:
+
+```bash
+bash fpga/scripts/run_u280_trace.sh
+```
+
+The default run uses:
+
+```text
+xclbin: fpga/build/smartnic_moe_dispatch_v0.xclbin
+trace:  tests/traces/tiny_skewed.csv
+config: configs/full_smartnic.cfg
+out:    results/fpga_u280_smoke
+```
+
+To choose a different output directory, run:
+
+```bash
+bash fpga/scripts/run_u280_trace.sh \
+  --out results/fpga_u280_smoke_run001
+```
+
+Expected outputs:
+
+```text
+results/fpga_u280_smoke*/tokens.csv
+results/fpga_u280_smoke*/packets.csv
+results/fpga_u280_smoke*/summary.txt
+results/fpga_u280_smoke*/metrics.json
+```
+
+If the run fails before launching the kernel, first verify that the installed
+shell matches the xclbin:
+
+```bash
+xclbinutil --info --input fpga/build/smartnic_moe_dispatch_v0.xclbin
+```
+
+The xclbin should report:
+
+```text
+Platform VBNV: xilinx_u280_gen3x16_xdma_1_202211_1
+Kernels: smartnic_moe_dispatch_v0
+Content: Bitstream
+```
+
+## Artifact Handoff from Build Node to FPGA Node
 
 The hardware build writes the final artifact to:
 
@@ -91,8 +171,10 @@ The hardware build writes the final artifact to:
 <repo>/fpga/build/smartnic_moe_dispatch_v0.xclbin
 ```
 
-This directory is intentionally ignored by git. GitHub is not an artifact
-transport, and `git commit` or `git push` will not preserve this file.
+Most files in this directory are intentionally ignored by git. The final U280
+smoke-test xclbin is the one exception currently tracked in this repository.
+For future rebuilds, preserve the new artifact before releasing or reimaging
+the build node.
 
 Immediately after a successful `TARGET=hw` build, run the following on the
 **build node**:
@@ -130,9 +212,7 @@ xbutil examine
 
 The checksum command must report `OK`. The xclbin platform must match the shell
 installed on the FPGA node. Only after these checks pass is artifact handoff
-complete. If direct SSH transfer is unavailable, upload the same three files to
-durable project/object storage or a GitHub Release, then download and verify
-them on the FPGA node.
+complete.
 
 Run hardware emulation from the generated `emconfig.json` directory:
 
@@ -144,12 +224,8 @@ bash scripts/run_hw_emu_trace.sh \
   --out ../results/fpga_hw_emu_smoke
 ```
 
-On a U280 node, build `TARGET=hw` and run:
+On a U280 node with the tracked runtime artifacts, run:
 
 ```bash
-bash scripts/run_u280_trace.sh \
-  --xclbin build/smartnic_moe_dispatch_v0.xclbin \
-  --trace ../tests/traces/tiny_skewed.csv \
-  --config ../configs/full_smartnic.cfg \
-  --out ../results/fpga_u280_smoke
+bash fpga/scripts/run_u280_trace.sh
 ```
