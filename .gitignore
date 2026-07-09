@@ -1,4 +1,6 @@
-build/
+build/*
+!build/fpga_run_trace_xrt
+!fpga/build/
 results/*.csv
 results/*.txt
 results/fpga_*_smoke/
@@ -6,7 +8,8 @@ results/fpga_v0_matrix/
 _x/
 .Xil/
 .ipcache/
-fpga/build/
+fpga/build/*
+!fpga/build/smartnic_moe_dispatch_v0.xclbin
 build_u280*.log
 v++_*.log
 v++_*.backup.log
