@@ -1,5 +1,12 @@
 # FPGA SmartNIC Prototype
 
+> [!CAUTION]
+> **P0 — A successful build is not safely preserved until artifact handoff is
+> complete.** `fpga/build/` is ignored by git. Committing and pushing the
+> repository will not upload the xclbin. Do not release or reimage the build
+> node until the xclbin has been copied to the FPGA node or durable storage and
+> its checksum has been verified.
+
 This directory contains the FPGA/HLS implementation scaffold for the
 trace-driven SmartNIC dispatch prototype.
 
@@ -75,6 +82,57 @@ export PLATFORM=xilinx_u280_gen3x16_xdma_1_202211_1
 export TARGET=hw_emu
 bash scripts/build_hw_emu.sh
 ```
+
+## P0 Artifact Handoff from Build Node to FPGA Node
+
+The hardware build writes the final artifact to:
+
+```text
+<repo>/fpga/build/smartnic_moe_dispatch_v0.xclbin
+```
+
+This directory is intentionally ignored by git. GitHub is not an artifact
+transport, and `git commit` or `git push` will not preserve this file.
+
+Immediately after a successful `TARGET=hw` build, run the following on the
+**build node**:
+
+```bash
+cd /path/to/SMoE-Prototype/fpga/build
+test -s smartnic_moe_dispatch_v0.xclbin
+xclbinutil --info \
+  --input smartnic_moe_dispatch_v0.xclbin \
+  > smartnic_moe_dispatch_v0.xclbin.info
+sha256sum smartnic_moe_dispatch_v0.xclbin \
+  > smartnic_moe_dispatch_v0.xclbin.sha256
+```
+
+Copy the artifact, checksum, and metadata to the **FPGA node**. `rsync` is
+preferred because a large interrupted transfer can be resumed:
+
+```bash
+ssh USER@FPGA_NODE 'mkdir -p /path/to/SMoE-Prototype/fpga/build'
+rsync -avP \
+  smartnic_moe_dispatch_v0.xclbin \
+  smartnic_moe_dispatch_v0.xclbin.sha256 \
+  smartnic_moe_dispatch_v0.xclbin.info \
+  USER@FPGA_NODE:/path/to/SMoE-Prototype/fpga/build/
+```
+
+On the **FPGA node**, verify the copy before releasing the build node:
+
+```bash
+cd /path/to/SMoE-Prototype/fpga/build
+sha256sum -c smartnic_moe_dispatch_v0.xclbin.sha256
+xclbinutil --info --input smartnic_moe_dispatch_v0.xclbin
+xbutil examine
+```
+
+The checksum command must report `OK`. The xclbin platform must match the shell
+installed on the FPGA node. Only after these checks pass is artifact handoff
+complete. If direct SSH transfer is unavailable, upload the same three files to
+durable project/object storage or a GitHub Release, then download and verify
+them on the FPGA node.
 
 Run hardware emulation from the generated `emconfig.json` directory:
 

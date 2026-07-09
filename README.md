@@ -1,5 +1,14 @@
 # Nexus-MoE-SmartNIC-Prototype
 
+> [!CAUTION]
+> **P0 — Preserve the xclbin before releasing the build node.**
+> `fpga/build/` is ignored by git, so a successful FPGA build does **not**
+> place the generated xclbin on GitHub. The artifact exists only on the machine
+> that ran `v++` until it is copied elsewhere. Before stopping or reprovisioning
+> a build node, transfer `fpga/build/smartnic_moe_dispatch_v0.xclbin` to the
+> FPGA execution node or durable storage and verify its SHA-256 checksum.
+> See [FPGA artifact handoff](fpga/README.md#p0-artifact-handoff-from-build-node-to-fpga-node).
+
 This repository contains a deterministic C++17 software reference model for
 Nexus-MoE SmartNIC token dispatch. It is intended as a correctness oracle before
 building FPGA/HLS implementations.

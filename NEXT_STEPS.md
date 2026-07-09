@@ -2,12 +2,32 @@
 
 Date: 2026-07-08
 
-The U280 hardware build completed successfully for the V0 SmartNIC MoE dispatch
-prototype.
+## P0 Blocker: Rebuild and Preserve the Hardware Artifact
 
-## Current Build Result
+> [!CAUTION]
+> The previous U280 build completed, but its xclbin was left only in the build
+> node's git-ignored `fpga/build/` directory. It was not pushed to GitHub and is
+> not available in a fresh clone. A new hardware build is required.
 
-The generated local hardware xclbin is:
+The highest-priority task is to rebuild the U280 xclbin and complete artifact
+handoff before releasing or reimaging the build node:
+
+1. Rebuild `fpga/build/smartnic_moe_dispatch_v0.xclbin` on the build node.
+2. Confirm that the file exists and is non-empty.
+3. Generate its `xclbinutil` metadata and SHA-256 checksum.
+4. Transfer the xclbin, metadata, and checksum to the FPGA node or durable
+   storage.
+5. Verify the checksum and platform compatibility on the FPGA node.
+6. Run the U280 smoke test.
+
+The exact transfer and verification commands are documented in
+[`fpga/README.md`](fpga/README.md#p0-artifact-handoff-from-build-node-to-fpga-node).
+The build node must remain available until the checksum reports `OK` on the
+destination.
+
+## Previous Build Result (Artifact Not Preserved)
+
+The previous build generated this local-only artifact:
 
 ```text
 fpga/build/smartnic_moe_dispatch_v0.xclbin
@@ -43,10 +63,10 @@ Vitis auto-scaled the data clock down because one or more timing paths missed
 the original 300 MHz target. Treat the bitstream as a valid first hardware
 bring-up artifact, but record the achieved clock when reporting results.
 
-The build directory is intentionally ignored by git, so the xclbin remains a
-local artifact unless it is uploaded separately as a release artifact.
+The build directory is intentionally ignored by git. Consequently, this
+artifact was not included in the `bulid finished` commit or pushed to GitHub.
 
-## Immediate Next Step
+## Immediate Next Step After Rebuild and Handoff
 
 Run the U280 smoke test:
 
