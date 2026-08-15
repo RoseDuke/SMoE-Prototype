@@ -3,6 +3,8 @@
 This document describes the proposed SmartNIC prototype for MoE token dispatch.
 Here, "kernel" means an FPGA/HLS or NIC-side processing block, not an OS kernel.
 
+
+
 ## Goal
 
 The SmartNIC sits between GPU-produced MoE routing metadata and remote expert
